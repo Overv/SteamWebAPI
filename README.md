@@ -24,6 +24,34 @@ public enum LoginStatus
 }
 ```
 
+**UserStatus**
+
+Status of a user.
+
+```c#
+public enum UserStatus
+{
+	Offline = 0,
+	Online = 1,
+	Busy = 2,
+	Away = 3,
+	Snooze = 4
+}
+```
+
+**ProfileVisibility**
+
+Visibility of a user's profile.
+
+```c#
+public enum ProfileVisibility
+{
+	Private = 1,
+	Public = 3,
+	FriendsOnly = 8
+}
+```
+
 ### SteamAPISession ###
 
 This is the main class you will be using. It manages the session of a single Steam user and all requests are issued through methods in this class.
@@ -41,6 +69,12 @@ Authenticate with an access token previously retrieved with a username and passw
 
 Fetch basic info for all friends of a given user.
 
+**List<User> GetUserInfo( List<String> steamids )**
+**List<User> GetUserInfo( List<Friend> friends )**
+User GetUserInfo( String steamid = null )
+
+Retrieve information about the specified users. Pass null for self.
+
 **ServerInfo GetServerInfo()**
 
 Returns info about the server, as specified in the *ServerInfo* class. This is the only call besides *Authenticate* that does not require a valid user session.
@@ -57,6 +91,30 @@ public class Friend
     public String steamid;
     public bool blocked;
     public DateTime friendSince;
+}
+```
+
+**User**
+
+Structure containing extensive user info.
+
+```c#
+public class User
+{
+	public String steamid;
+	public ProfileVisibility profileVisibility;
+	public int profileState;
+	public String nickname;
+	public DateTime lastLogoff;
+	public String profileUrl;
+	public String avatarUrl;
+	public UserStatus status;
+	public String realName;
+	public String primaryGroupId;
+	public DateTime joinDate;
+	public String locationCountryCode;
+	public String locationStateCode;
+	public int locationCityId;
 }
 ```
 

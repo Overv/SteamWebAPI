@@ -16,7 +16,7 @@ namespace SteamWebAPI
     {
         private String accessToken;
         private String umqid;
-        private String steamId;
+        private String steamid;
         private int message = 0;
 
         /// <summary>
@@ -30,6 +30,28 @@ namespace SteamWebAPI
         }
 
         /// <summary>
+        /// Status of a user.
+        /// </summary>
+        public enum UserStatus
+        {
+            Offline = 0,
+            Online = 1,
+            Busy = 2,
+            Away = 3,
+            Snooze = 4
+        }
+
+        /// <summary>
+        /// Visibility of a user's profile.
+        /// </summary>
+        public enum ProfileVisibility
+        {
+            Private = 1,
+            Public = 3,
+            FriendsOnly = 8
+        }
+
+        /// <summary>
         /// Structure containing basic friend info.
         /// </summary>
         public class Friend
@@ -37,6 +59,27 @@ namespace SteamWebAPI
             public String steamid;
             public bool blocked;
             public DateTime friendSince;
+        }
+
+        /// <summary>
+        /// Structure containing extensive user info.
+        /// </summary>
+        public class User
+        {
+            public String steamid;
+            public ProfileVisibility profileVisibility;
+            public int profileState;
+            public String nickname;
+            public DateTime lastLogoff;
+            public String profileUrl;
+            public String avatarUrl;
+            public UserStatus status;
+            public String realName;
+            public String primaryGroupId;
+            public DateTime joinDate;
+            public String locationCountryCode;
+            public String locationStateCode;
+            public int locationCityId;
         }
 
         /// <summary>
@@ -95,48 +138,125 @@ namespace SteamWebAPI
         }
 
         /// <summary>
-        /// Fetch all friends for a given user.
+        /// Fetch all friends of a given user.
         /// </summary>
         /// <remarks>This function does not provide detailed information.</remarks>
-        /// <param name="steamId">SteamID of target user or self</param>
+        /// <param name="steamid">steamid of target user or self</param>
         /// <returns>List of friends or null on failure.</returns>
-        public List<Friend> GetFriends( String steamId = null )
+        public List<Friend> GetFriends( String steamid = null )
         {
             if ( umqid == null ) return null;
-            if ( steamId == null ) steamId = this.steamId;
+            if ( steamid == null ) steamid = this.steamid;
 
-            String response = steamRequest( "ISteamUserOAuth/GetFriendList/v0001?access_token=" + accessToken + "&steamid=" + steamId );
+            String response = steamRequest( "ISteamUserOAuth/GetFriendList/v0001?access_token=" + accessToken + "&steamid=" + steamid );
 
-             if ( response != null )
-             {
-                 JObject data = JObject.Parse( response );
+            if ( response != null )
+            {
+                JObject data = JObject.Parse( response );
 
-                 if ( data["friends"] != null )
-                 {
-                     List<Friend> friends = new List<Friend>();
+                if ( data["friends"] != null )
+                {
+                    List<Friend> friends = new List<Friend>();
 
-                     foreach ( JObject friend in data["friends"] )
-                     {
-                         Friend f = new Friend();
-                         f.steamid = (String)friend["steamid"];
-                         f.blocked = ( (String)friend["relationship"] ).Equals( "ignored" );
-                         f.friendSince = unixTimestamp( (long)friend["friend_since"] );
-                         friends.Add( f );
-                     }
+                    foreach ( JObject friend in data["friends"] )
+                    {
+                        Friend f = new Friend();
+                        f.steamid = (String)friend["steamid"];
+                        f.blocked = ( (String)friend["relationship"] ).Equals( "ignored" );
+                        f.friendSince = unixTimestamp( (long)friend["friend_since"] );
+                        friends.Add( f );
+                    }
 
-                     return friends;
-                 }
-                 else
-                 {
-                     return null;
-                 }
-             }
-             else
-             {
-                 return null;
-             }
+                    return friends;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
+        /// <summary>
+        /// Retrieve information about the specified users.
+        /// </summary>
+        /// <remarks>This function doesn't have the 100 users limit the original API has.</remarks>
+        /// <param name="steamids">64-bit SteamIDs of users</param>
+        /// <returns>Information about the specified users</returns>
+        public List<User> GetUserInfo( List<String> steamids )
+        {
+            if ( umqid == null ) return null;
+
+            String response = steamRequest( "ISteamUserOAuth/GetUserSummaries/v0001?access_token=" + accessToken + "&steamids=" + String.Join( ",", steamids.GetRange( 0, Math.Min( steamids.Count, 100 ) ).ToArray() ) );
+
+            if ( response != null )
+            {
+                JObject data = JObject.Parse( response );
+
+                if ( data["players"] != null )
+                {
+                    List<User> users = new List<User>();
+
+                    foreach ( JObject info in data["players"] )
+                    {
+                        User user = new User();
+
+                        user.steamid = (String)info["steamid"];
+                        user.profileVisibility = (ProfileVisibility)(int)info["communityvisibilitystate"];
+                        user.profileState = (int)info["profilestate"];
+                        user.nickname = (String)info["personaname"];
+                        user.lastLogoff = unixTimestamp( (long)info["lastlogoff"] );
+                        user.profileUrl = (String)info["profileurl"];
+                        user.status = (UserStatus)(int)info["personastate"];
+
+                        user.joinDate = unixTimestamp( info["timecreated"] != null ? (long)info["timecreated"] : 0 );
+                        user.avatarUrl = info["avatar"] != null ? (String)info["avatar"] : "";
+                        user.primaryGroupId = info["primaryclanid"] != null ? (String)info["primaryclanid"] : "";
+                        user.realName = info["realname"] != null ? (String)info["realname"] : "";
+                        user.locationCountryCode = info["loccountrycode"] != null ? (String)info["loccountrycode"] : "";
+                        user.locationStateCode = info["locstatecode"] != null ? (String)info["locstatecode"] : "";
+                        user.locationCityId = info["loccityid"] != null ? (int)info["loccityid"] : -1;
+
+                        users.Add( user );
+                    }
+
+                    // Requests are limited to 100 steamids, so issue multiple requests
+                    if ( steamids.Count > 100 )
+                        users.AddRange( GetUserInfo( steamids.GetRange( 100, Math.Min( steamids.Count - 100, 100 ) ) ) );
+
+                    return users;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public List<User> GetUserInfo( List<Friend> friends )
+        {
+            List<String> steamids = new List<String>( friends.Count );
+            foreach ( Friend f in friends ) steamids.Add( f.steamid );
+            return GetUserInfo( steamids );
+        }
+
+        public User GetUserInfo( String steamid = null )
+        {
+            if ( steamid == null ) steamid = this.steamid;
+            return GetUserInfo( new List<String>( new String[] { steamid } ) )[0];
+        }
+
+        /// <summary>
+        /// Retrieves information about the server.
+        /// </summary>
+        /// <returns>Returns a structure with the information.</returns>
         public ServerInfo GetServerInfo()
         {
             String response = steamRequest( "ISteamWebAPIUtil/GetServerInfo/v0001" );
@@ -179,7 +299,7 @@ namespace SteamWebAPI
 
                 if ( data["umqid"] != null )
                 {
-                    steamId = (String)data["steamid"];
+                    steamid = (String)data["steamid"];
                     umqid = (String)data["umqid"];
                     message = (int)data["message"];
                     return true;
