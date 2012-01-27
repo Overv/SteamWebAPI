@@ -78,13 +78,13 @@ Authenticate with a username and password. Sends the SteamGuard e-mail if it has
 
 Authenticate with an access token previously retrieved with a username and password (and SteamGuard code).
 
-**List<Friend> GetFriends( String steamId = null )**
+**List&lt;Friend&gt; GetFriends( String steamId = null )**
 
 Fetch basic info for all friends of a given user.
 
-**List<User> GetUserInfo( List<String> steamids )**
+**List&lt;User&gt; GetUserInfo( List&lt;String&gt; steamids )**
 
-**List<User> GetUserInfo( List<Friend> friends )**
+**List&lt;User&gt; GetUserInfo( List&lt;Friend&gt; friends )**
 
 **User GetUserInfo( String steamid = null )**
 
@@ -94,13 +94,13 @@ Retrieve information about the specified users. Pass null for self.
 
 Retrieve the avatar of the specified user as bitmap.
 
-**List<Group> GetGroups( String steamid = null )**
+**List&lt;Group&gt; GetGroups( String steamid = null )**
 
 Fetch basic group info for a given user.
 
-**List<GroupInfo> GetGroupInfo( List<String> steamids )**
+**List&lt;GroupInfo&gt; GetGroupInfo( List&lt;String&gt; steamids )**
 
-**List<GroupInfo> GetGroupInfo( List<Group> groups )**
+**List&lt;GroupInfo&gt; GetGroupInfo( List&lt;Group&gt; groups )**
 
 **GroupInfo GetGroupInfo( String steamid )**
 
@@ -239,8 +239,8 @@ namespace SteamWebAPI
 
             if ( status == SteamAPISession.LoginStatus.LoginSuccessful )
             {
-                List<SteamAPISession.Friend> friends = session.GetFriends();
-                int blockedFriends = friends.Count( f => f.blocked == true );
+                List&lt;SteamAPISession.Friend&gt; friends = session.GetFriends();
+                int blockedFriends = friends.Count( f =&gt; f.blocked == true );
                 Console.WriteLine( "You have " + ( friends.Count - blockedFriends ) + " friends and " + blockedFriends + " fiends!" );
             }
             else
