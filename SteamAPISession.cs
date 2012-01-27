@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.IO;
+using System.Drawing;
 using Newtonsoft.Json.Linq;
 
 namespace SteamWebAPI
@@ -52,6 +53,16 @@ namespace SteamWebAPI
         }
 
         /// <summary>
+        /// Available sizes of user avatars.
+        /// </summary>
+        public enum AvatarSize
+        {
+            Small,
+            Medium,
+            Large
+        }
+
+        /// <summary>
         /// Structure containing basic friend info.
         /// </summary>
         public class Friend
@@ -72,7 +83,7 @@ namespace SteamWebAPI
             public String nickname;
             public DateTime lastLogoff;
             public String profileUrl;
-            public String avatarUrl;
+            internal String avatarUrl;
             public UserStatus status;
             public String realName;
             public String primaryGroupId;
@@ -212,8 +223,10 @@ namespace SteamWebAPI
                         user.profileUrl = (String)info["profileurl"];
                         user.status = (UserStatus)(int)info["personastate"];
 
-                        user.joinDate = unixTimestamp( info["timecreated"] != null ? (long)info["timecreated"] : 0 );
                         user.avatarUrl = info["avatar"] != null ? (String)info["avatar"] : "";
+                        if ( user.avatarUrl != null ) user.avatarUrl = user.avatarUrl.Substring( 0, user.avatarUrl.Length - 4 );
+
+                        user.joinDate = unixTimestamp( info["timecreated"] != null ? (long)info["timecreated"] : 0 );
                         user.primaryGroupId = info["primaryclanid"] != null ? (String)info["primaryclanid"] : "";
                         user.realName = info["realname"] != null ? (String)info["realname"] : "";
                         user.locationCountryCode = info["loccountrycode"] != null ? (String)info["loccountrycode"] : "";
@@ -251,6 +264,40 @@ namespace SteamWebAPI
         {
             if ( steamid == null ) steamid = this.steamid;
             return GetUserInfo( new List<String>( new String[] { steamid } ) )[0];
+        }
+
+        /// <summary>
+        /// Retrieve the avatar of the specified user in the specified format.
+        /// </summary>
+        /// <param name="user">User</param>
+        /// <param name="size">Requested avatar size</param>
+        /// <returns>The avatar as bitmap on success or null on failure.</returns>
+        public Bitmap GetUserAvatar( User user, AvatarSize size = AvatarSize.Small )
+        {
+            if ( user.avatarUrl.Length == 0 ) return null;
+
+            try
+            {
+                WebClient client = new WebClient();
+
+                Stream stream;
+                if ( size == AvatarSize.Small )
+                    stream = client.OpenRead( user.avatarUrl + ".jpg" );
+                else if ( size == AvatarSize.Medium )
+                    stream = client.OpenRead( user.avatarUrl + "_medium.jpg" );
+                else
+                    stream = client.OpenRead( user.avatarUrl + "_full.jpg" );
+
+                Bitmap avatar = new Bitmap( stream );
+                stream.Flush();
+                stream.Close();
+
+                return avatar;
+            }
+            catch ( Exception e )
+            {
+                return null;
+            }
         }
 
         /// <summary>

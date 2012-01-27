@@ -52,6 +52,19 @@ public enum ProfileVisibility
 }
 ```
 
+**AvatarSize**
+
+Available sizes of user avatars.
+
+```c#
+public enum AvatarSize
+{
+	Small,
+	Medium,
+	Large
+}
+```
+
 ### SteamAPISession ###
 
 This is the main class you will be using. It manages the session of a single Steam user and all requests are issued through methods in this class.
@@ -76,6 +89,10 @@ Fetch basic info for all friends of a given user.
 **User GetUserInfo( String steamid = null )**
 
 Retrieve information about the specified users. Pass null for self.
+
+**Bitmap GetUserAvatar( User user, AvatarSize size = AvatarSize.Small )**
+
+Retrieve the avatar of the specified user as bitmap.
 
 **ServerInfo GetServerInfo()**
 
