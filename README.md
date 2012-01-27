@@ -285,8 +285,8 @@ namespace SteamWebAPI
 
             if ( status == SteamAPISession.LoginStatus.LoginSuccessful )
             {
-                List&lt;SteamAPISession.Friend&gt; friends = session.GetFriends();
-                int blockedFriends = friends.Count( f =&gt; f.blocked == true );
+                List<SteamAPISession.Friend> friends = session.GetFriends();
+                int blockedFriends = friends.Count( f => f.blocked == true );
                 Console.WriteLine( "You have " + ( friends.Count - blockedFriends ) + " friends and " + blockedFriends + " fiends!" );
             }
             else
