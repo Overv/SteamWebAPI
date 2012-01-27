@@ -70,8 +70,10 @@ Authenticate with an access token previously retrieved with a username and passw
 Fetch basic info for all friends of a given user.
 
 **List<User> GetUserInfo( List<String> steamids )**
+
 **List<User> GetUserInfo( List<Friend> friends )**
-User GetUserInfo( String steamid = null )
+
+**User GetUserInfo( String steamid = null )**
 
 Retrieve information about the specified users. Pass null for self.
 
@@ -117,6 +119,8 @@ public class User
 	public int locationCityId;
 }
 ```
+
+*Note that some of these fields can be empty!*
 
 **ServerInfo**
 
