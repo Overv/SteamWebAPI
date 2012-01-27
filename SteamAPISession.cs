@@ -467,6 +467,53 @@ namespace SteamWebAPI
         }
 
         /// <summary>
+        /// Let a user know you're typing a message. Should be called periodically.
+        /// </summary>
+        /// <param name="steamid">Recipient of notification</param>
+        /// <returns>Returns a boolean indicating success of the request.</returns>
+        public bool SendTypingNotification( User user )
+        {
+            if ( umqid == null ) return false;
+
+            String response = steamRequest( "ISteamWebUserPresenceOAuth/Message/v0001", "?access_token=" + accessToken + "&umqid=" + umqid + "&type=typing&steamid_dst=" + user.steamid );
+
+            if ( response != null )
+            {
+                JObject data = JObject.Parse( response );
+
+                return data["error"] != null && ( (String)data["error"] ).Equals( "OK" );
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Send a text message to the specified user.
+        /// </summary>
+        /// <param name="steamid">Recipient of message</param>
+        /// <param name="message">Message contents</param>
+        /// <returns>Returns a boolean indicating success of the request.</returns>
+        public bool SendMessage( User user, String message )
+        {
+            if ( umqid == null ) return false;
+
+            String response = steamRequest( "ISteamWebUserPresenceOAuth/Message/v0001", "?access_token=" + accessToken + "&umqid=" + umqid + "&type=saytext&text=" + Uri.EscapeDataString( message ) + "&steamid_dst=" + user.steamid );
+
+            if ( response != null )
+            {
+                JObject data = JObject.Parse( response );
+
+                return data["error"] != null && ( (String)data["error"] ).Equals( "OK" );
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Retrieves information about the server.
         /// </summary>
         /// <returns>Returns a structure with the information.</returns>

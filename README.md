@@ -110,6 +110,14 @@ Retrieve information about the specified groups.
 
 Retrieve the avatar of the specified group as bitmap.
 
+**bool SendTypingNotification( User user )**
+
+Let a user know you're typing a message. Should be called periodically.
+
+**bool SendMessage( User user, String message )**
+
+Send a text message to the specified user.
+
 **ServerInfo GetServerInfo()**
 
 Returns info about the server, as specified in the *ServerInfo* class. This is the only call besides *Authenticate* that does not require a valid user session.
