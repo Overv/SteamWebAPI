@@ -74,6 +74,7 @@ public enum UpdateType
 {
     UserUpdate,
     Message,
+	Emote,
     TypingNotification
 }
 ```

@@ -69,6 +69,7 @@ namespace SteamWebAPI
         {
             UserUpdate,
             Message,
+            Emote,
             TypingNotification
         }
 
@@ -536,6 +537,13 @@ namespace SteamWebAPI
                 return false;
             }
         }
+
+        public bool SendMessage( String steamid, String message )
+        {
+            User user = new User();
+            user.steamid = steamid;
+            return SendMessage( user, message );
+        }
         
         /// <summary>
         /// Check for updates and new messages.
@@ -565,9 +573,9 @@ namespace SteamWebAPI
                         update.origin = (String)info["steamid_from"];
 
                         String type = (String)info["type"];
-                        if ( type.Equals( "saytext" ) || type.Equals( "my_saytext" ) )
+                        if ( type.Equals( "saytext" ) || type.Equals( "my_saytext" ) || type.Equals( "emote" ) )
                         {
-                            update.type = UpdateType.Message;
+                            update.type = type.Equals( "emote" ) ? UpdateType.Emote : UpdateType.Message;
                             update.message = (String)info["text"];
                             update.localMessage = type.Equals( "my_saytext" );
                         }
@@ -584,7 +592,6 @@ namespace SteamWebAPI
                         }
                         else
                         {
-                            Console.WriteLine( "Unknown type: " + type );
                             continue;
                         }
 
