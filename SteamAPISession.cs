@@ -58,12 +58,12 @@ namespace SteamWebAPI
         /// <returns>Indication of the authentication status.</returns>
         public LoginStatus Authenticate( String username, String password, String emailauthcode = "" )
         {
-            HttpWebResponse response = steamRequest( "ISteamOAuth2/GetTokenWithCredentials/v0001",
+            String response = steamRequest( "ISteamOAuth2/GetTokenWithCredentials/v0001",
                 "client_id=DE45CD61&grant_type=password&username=" + Uri.EscapeDataString( username ) + "&password=" + Uri.EscapeDataString( password ) + "&x_emailauthcode=" + emailauthcode + "&scope=read_profile%20write_profile%20read_client%20write_client" );
 
-            if ( response != null && (int)response.StatusCode == 200 )
+            if ( response != null )
             {
-                JObject data = JObject.Parse( new StreamReader( response.GetResponseStream() ).ReadToEnd() );
+                JObject data = JObject.Parse( response );
 
                 if ( data["access_token"] != null )
                 {
@@ -105,11 +105,11 @@ namespace SteamWebAPI
             if ( umqid == null ) return null;
             if ( steamId == null ) steamId = this.steamId;
 
-            HttpWebResponse response = steamRequest( "ISteamUserOAuth/GetFriendList/v0001?access_token=" + accessToken + "&steamid=" + steamId );
+            String response = steamRequest( "ISteamUserOAuth/GetFriendList/v0001?access_token=" + accessToken + "&steamid=" + steamId );
 
-             if ( response != null && (int)response.StatusCode == 200 )
+             if ( response != null )
              {
-                 JObject data = JObject.Parse( new StreamReader( response.GetResponseStream() ).ReadToEnd() );
+                 JObject data = JObject.Parse( response );
 
                  if ( data["friends"] != null )
                  {
@@ -139,11 +139,11 @@ namespace SteamWebAPI
 
         public ServerInfo GetServerInfo()
         {
-            HttpWebResponse response = steamRequest( "ISteamWebAPIUtil/GetServerInfo/v0001" );
+            String response = steamRequest( "ISteamWebAPIUtil/GetServerInfo/v0001" );
 
-            if ( response != null && (int)response.StatusCode == 200 )
+            if ( response != null )
             {
-                JObject data = JObject.Parse( new StreamReader( response.GetResponseStream() ).ReadToEnd() );
+                JObject data = JObject.Parse( response );
 
                 if ( data["servertime"] != null )
                 {
@@ -170,12 +170,12 @@ namespace SteamWebAPI
         /// <returns>Whether the login was successful or not.</returns>
         private bool login()
         {
-            HttpWebResponse response = steamRequest( "ISteamWebUserPresenceOAuth/Logon/v0001",
+            String response = steamRequest( "ISteamWebUserPresenceOAuth/Logon/v0001",
                 "?access_token=" + accessToken );
 
-            if ( response != null && (int)response.StatusCode == 200 )
+            if ( response != null )
             {
-                JObject data = JObject.Parse( new StreamReader( response.GetResponseStream() ).ReadToEnd() );
+                JObject data = JObject.Parse( response );
 
                 if ( data["umqid"] != null )
                 {
@@ -201,7 +201,7 @@ namespace SteamWebAPI
         /// <param name="get">Path URI</param>
         /// <param name="post">Post data</param>
         /// <returns>Web response info</returns>
-        private HttpWebResponse steamRequest( String get, String post = null )
+        private String steamRequest( String get, String post = null )
         {
             System.Net.ServicePointManager.Expect100Continue = false;
 
@@ -226,7 +226,12 @@ namespace SteamWebAPI
 
             try
             {
-                return (HttpWebResponse)request.GetResponse();
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                if ( (int)response.StatusCode != 200 ) return null;
+
+                String src = new StreamReader( response.GetResponseStream() ).ReadToEnd();
+                response.Close();
+                return src;
             }
             catch ( WebException e )
             {
