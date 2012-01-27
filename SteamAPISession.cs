@@ -94,6 +94,39 @@ namespace SteamWebAPI
         }
 
         /// <summary>
+        /// Basic group info.
+        /// </summary>
+        public class Group
+        {
+            public String steamid;
+            public bool inviteonly;
+        }
+
+        /// <summary>
+        /// Structure containing extensive group info.
+        /// </summary>
+        public class GroupInfo
+        {
+            public String steamid;
+            public DateTime creationDate;
+            public String name;
+            public String headline;
+            public String summary;
+            public String abbreviation;
+            public String profileUrl;
+            internal String avatarUrl;
+            public String locationCountryCode;
+            public String locationStateCode;
+            public int locationCityId;
+            public int favoriteAppId;
+            public int members;
+            public int usersOnline;
+            public int usersInChat;
+            public int usersInGame;
+            public String owner;
+        }
+
+        /// <summary>
         /// Structure containing server info.
         /// </summary>
         public class ServerInfo
@@ -298,6 +331,126 @@ namespace SteamWebAPI
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Fetch all groups of a given user.
+        /// </summary>
+        /// <param name="steamid">SteamID</param>
+        /// <returns>List of groups.</returns>
+        public List<Group> GetGroups( String steamid = null )
+        {
+            if ( umqid == null ) return null;
+            if ( steamid == null ) steamid = this.steamid;
+
+            String response = steamRequest( "ISteamUserOAuth/GetGroupList/v0001?access_token=" + accessToken + "&steamid=" + steamid );
+
+            if ( response != null )
+            {
+                JObject data = JObject.Parse( response );
+
+                if ( data["groups"] != null )
+                {
+                    List<Group> groups = new List<Group>();
+
+                    foreach ( JObject info in data["groups"] )
+                    {
+                        Group group = new Group();
+
+                        group.steamid = (String)info["steamid"];
+                        group.inviteonly = ( (String)info["permission"] ).Equals( "2" );
+
+                        if ( ( (String)info["relationship"] ).Equals( "Member" ) )
+                            groups.Add( group);
+                    }
+
+                    return groups;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve information about the specified groups.
+        /// </summary>
+        /// <param name="steamids">64-bit SteamIDs of groups</param>
+        /// <returns>Information about the specified groups</returns>
+        public List<GroupInfo> GetGroupInfo( List<String> steamids )
+        {
+            if ( umqid == null ) return null;
+
+            String response = steamRequest( "ISteamUserOAuth/GetGroupSummaries/v0001?access_token=" + accessToken + "&steamids=" + String.Join( ",", steamids.GetRange( 0, Math.Min( steamids.Count, 100 ) ).ToArray() ) );
+
+            if ( response != null )
+            {
+                JObject data = JObject.Parse( response );
+
+                if ( data["groups"] != null )
+                {
+                    List<GroupInfo> groups = new List<GroupInfo>();
+
+                    foreach ( JObject info in data["groups"] )
+                    {
+                        GroupInfo group = new GroupInfo();
+
+                        group.steamid = (String)info["steamid"];
+                        group.creationDate = unixTimestamp( (long)info["timecreated"] );
+                        group.name = (String)info["name"];
+                        group.profileUrl = "http://steamcommunity.com/groups/" + (String)info["profileurl"];
+                        group.usersOnline = (int)info["usersonline"];
+                        group.usersInChat = (int)info["usersinclanchat"];
+                        group.usersInGame = (int)info["usersingame"];
+                        group.owner = (String)info["ownerid"];
+                        group.members = (int)info["users"];
+
+                        group.avatarUrl = (String)info["avatar"];
+                        if ( group.avatarUrl != null ) group.avatarUrl = group.avatarUrl.Substring( 0, group.avatarUrl.Length - 4 );
+
+                        group.headline = info["headline"] != null ? (String)info["headline"] : "";
+                        group.summary = info["summary"] != null ? (String)info["summary"] : "";
+                        group.abbreviation = info["abbreviation"] != null ? (String)info["abbreviation"] : "";
+                        group.locationCountryCode = info["loccountrycode"] != null ? (String)info["loccountrycode"] : "";
+                        group.locationStateCode = info["locstatecode"] != null ? (String)info["locstatecode"] : "";
+                        group.locationCityId = info["loccityid"] != null ? (int)info["loccityid"] : -1;
+                        group.favoriteAppId = info["favoriteappid"] != null ? (int)info["favoriteappid"] : -1;
+
+                        groups.Add( group);
+                    }
+
+                    // Requests are limited to 100 steamids, so issue multiple requests
+                    if ( steamids.Count > 100 )
+                        groups.AddRange( GetGroupInfo( steamids.GetRange( 100, Math.Min( steamids.Count - 100, 100 ) ) ) );
+
+                    return groups;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public List<GroupInfo> GetGroupInfo( List<Group> groups )
+        {
+            List<String> steamids = new List<String>( groups.Count );
+            foreach ( Group g in groups ) steamids.Add( g.steamid );
+            return GetGroupInfo( steamids );
+        }
+
+        public GroupInfo GetGroupInfo( String steamid )
+        {
+            return GetGroupInfo( new List<String>( new String[] { steamid } ) )[0];
         }
 
         /// <summary>

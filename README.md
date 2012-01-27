@@ -94,6 +94,18 @@ Retrieve information about the specified users. Pass null for self.
 
 Retrieve the avatar of the specified user as bitmap.
 
+**List<Group> GetGroups( String steamid = null )**
+
+Fetch basic group info for a given user.
+
+**List<GroupInfo> GetGroupInfo( List<String> steamids )**
+
+**List<GroupInfo> GetGroupInfo( List<Group> groups )**
+
+**GroupInfo GetGroupInfo( String steamid )**
+
+Retrieve information about the specified groups.
+
 **ServerInfo GetServerInfo()**
 
 Returns info about the server, as specified in the *ServerInfo* class. This is the only call besides *Authenticate* that does not require a valid user session.
@@ -138,6 +150,45 @@ public class User
 ```
 
 *Note that some of these fields can be empty!*
+
+**Group**
+
+Basic group info.
+
+```c#
+public class Group
+{
+    public String steamid;
+    public bool inviteonly;
+}
+```
+
+**GroupInfo**
+
+Structure containing extensive group info.
+
+```c#
+public class GroupInfo
+{
+    public String steamid;
+    public DateTime creationDate;
+    public String name;
+    public String headline;
+    public String summary;
+    public String abbreviation;
+    public String profileUrl;
+    internal String avatarUrl;
+    public String locationCountryCode;
+    public String locationStateCode;
+    public int locationCityId;
+    public int favoriteAppId;
+    public int members;
+    public int usersOnline;
+    public int usersInChat;
+    public int usersInGame;
+    public String owner;
+}
+```
 
 **ServerInfo**
 
