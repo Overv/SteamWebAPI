@@ -63,6 +63,16 @@ namespace SteamWebAPI
         }
 
         /// <summary>
+        /// Available update types.
+        /// </summary>
+        public enum UpdateType
+        {
+            UserUpdate,
+            Message,
+            TypingNotification
+        }
+
+        /// <summary>
         /// Structure containing basic friend info.
         /// </summary>
         public class Friend
@@ -124,6 +134,20 @@ namespace SteamWebAPI
             public int usersInChat;
             public int usersInGame;
             public String owner;
+        }
+
+        /// <summary>
+        /// Structure containing information about a single update.
+        /// </summary>
+        public class Update
+        {
+            public DateTime timestamp;
+            public String origin;
+            public bool localMessage;
+            public UpdateType type;
+            public String message;
+            public UserStatus status;
+            public String nick;
         }
 
         /// <summary>
@@ -510,6 +534,73 @@ namespace SteamWebAPI
             else
             {
                 return false;
+            }
+        }
+        
+        /// <summary>
+        /// Check for updates and new messages.
+        /// </summary>
+        /// <returns>A list of updates.</returns>
+        public List<Update> Poll()
+        {
+            if ( umqid == null ) return null;
+
+            String response = steamRequest( "ISteamWebUserPresenceOAuth/Poll/v0001", "?access_token=" + accessToken + "&umqid=" + umqid + "&message=" + message );
+
+            if ( response != null )
+            {
+                JObject data = JObject.Parse( response );
+
+                if ( ( (String)data["error"] ).Equals( "OK" ) )
+                {
+                    message = (int)data["messagelast"];
+
+                    List<Update> updates = new List<Update>();
+
+                    foreach ( JObject info in data["messages"] )
+                    {
+                        Update update = new Update();
+
+                        update.timestamp = unixTimestamp( (long)info["timestamp"] );
+                        update.origin = (String)info["steamid_from"];
+
+                        String type = (String)info["type"];
+                        if ( type.Equals( "saytext" ) || type.Equals( "my_saytext" ) )
+                        {
+                            update.type = UpdateType.Message;
+                            update.message = (String)info["text"];
+                            update.localMessage = type.Equals( "my_saytext" );
+                        }
+                        else if ( type.Equals( "typing" ) )
+                        {
+                            update.type = UpdateType.TypingNotification;
+                            update.message = (String)info["text"]; // Not sure if this is useful
+                        }
+                        else if ( type.Equals( "personastate" ) )
+                        {
+                            update.type = UpdateType.UserUpdate;
+                            update.status = (UserStatus)(int)info["persona_state"];
+                            update.nick = (String)info["persona_name"];
+                        }
+                        else
+                        {
+                            Console.WriteLine( "Unknown type: " + type );
+                            continue;
+                        }
+
+                        updates.Add( update );
+                    }
+
+                    return updates;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
             }
         }
 

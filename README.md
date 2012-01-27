@@ -65,6 +65,19 @@ public enum AvatarSize
 }
 ```
 
+**UpdateType**
+
+Available update types.
+
+```c#
+public enum UpdateType
+{
+    UserUpdate,
+    Message,
+    TypingNotification
+}
+```
+
 ### SteamAPISession ###
 
 This is the main class you will be using. It manages the session of a single Steam user and all requests are issued through methods in this class.
@@ -117,6 +130,10 @@ Let a user know you're typing a message. Should be called periodically.
 **bool SendMessage( User user, String message )**
 
 Send a text message to the specified user.
+
+**List&lt;Update&gt; Poll()**
+
+Check for updates and new messages.
 
 **ServerInfo GetServerInfo()**
 
@@ -199,6 +216,23 @@ public class GroupInfo
     public int usersInChat;
     public int usersInGame;
     public String owner;
+}
+```
+
+**Update**
+
+Structure containing information about a single update.
+
+```c#
+public class Update
+{
+    public DateTime timestamp;
+    public String origin;
+    public bool localMessage;
+    public UpdateType type;
+    public String message;
+    public UserStatus status;
+    public String nick;
 }
 ```
 
