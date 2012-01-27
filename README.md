@@ -106,6 +106,10 @@ Fetch basic group info for a given user.
 
 Retrieve information about the specified groups.
 
+**Bitmap GetGroupAvatar( Group group, AvatarSize size = AvatarSize.Small )**
+
+Retrieve the avatar of the specified group as bitmap.
+
 **ServerInfo GetServerInfo()**
 
 Returns info about the server, as specified in the *ServerInfo* class. This is the only call besides *Authenticate* that does not require a valid user session.

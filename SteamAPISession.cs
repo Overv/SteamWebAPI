@@ -334,6 +334,19 @@ namespace SteamWebAPI
         }
 
         /// <summary>
+        /// Retrieve the avatar of the specified group in the specified format.
+        /// </summary>
+        /// <param name="group">Group</param>
+        /// <param name="size">Requested avatar size</param>
+        /// <returns>The avatar as bitmap on success or null on failure.</returns>
+        public Bitmap GetGroupAvatar( GroupInfo group, AvatarSize size = AvatarSize.Small )
+        {
+            User user = new User();
+            user.avatarUrl = group.avatarUrl;
+            return GetUserAvatar( user, size );
+        }
+
+        /// <summary>
         /// Fetch all groups of a given user.
         /// </summary>
         /// <param name="steamid">SteamID</param>
