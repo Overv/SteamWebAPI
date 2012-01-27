@@ -1,0 +1,4 @@
+# Discard binaries
+
+obj/
+bin/

@@ -1,0 +1,1 @@
+Library for C# giving access to the functionality of the Steam Web API.
