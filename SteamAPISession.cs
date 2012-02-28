@@ -691,7 +691,10 @@ namespace SteamWebAPI
             {
                 request.Method = "POST";
                 byte[] postBytes = Encoding.ASCII.GetBytes( post );
-
+                request.Accept = "*/*";
+                request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
+                request.Headers[HttpRequestHeader.AcceptLanguage] = "en-us";
+                request.UserAgent = "Steam 1291812 / iPhone";
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.ContentLength = postBytes.Length;
 
