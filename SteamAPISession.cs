@@ -686,15 +686,15 @@ namespace SteamWebAPI
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create( "https://63.228.223.110/" + get );
             request.Host = "api.steampowered.com:443";
             request.ProtocolVersion = HttpVersion.Version11;
+			request.Accept = "*/*";
+			request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
+			request.Headers[HttpRequestHeader.AcceptLanguage] = "en-us";
+			request.UserAgent = "Steam 1291812 / iPhone";
 
             if ( post != null )
             {
                 request.Method = "POST";
                 byte[] postBytes = Encoding.ASCII.GetBytes( post );
-                request.Accept = "*/*";
-                request.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
-                request.Headers[HttpRequestHeader.AcceptLanguage] = "en-us";
-                request.UserAgent = "Steam 1291812 / iPhone";
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.ContentLength = postBytes.Length;
 
