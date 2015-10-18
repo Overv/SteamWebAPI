@@ -683,7 +683,7 @@ namespace SteamWebAPI
         {
             System.Net.ServicePointManager.Expect100Continue = false;
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create( "https://63.228.223.110/" + get );
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://api.steampowered.com/" + get);
             request.Host = "api.steampowered.com:443";
             request.ProtocolVersion = HttpVersion.Version11;
 			request.Accept = "*/*";
