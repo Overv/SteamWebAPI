@@ -146,7 +146,7 @@ namespace SteamWebAPI {
             public String serverTimeString;
         }
 		
-		 /// <summary>
+        /// <summary>
         /// Sends the Steam servers a pre-request so you can recive your Steam Guard code through email.
         /// </summary>
         /// <param name="username">Username</param>
