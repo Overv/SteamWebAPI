@@ -145,6 +145,23 @@ namespace SteamWebAPI {
             public DateTime serverTime;
             public String serverTimeString;
         }
+		
+		 /// <summary>
+        /// Sends the Steam servers a pre-request so you can recive your Steam Guard code through email.
+        /// </summary>
+        /// <param name="username">Username</param>
+        /// <param name="password">Password</param>
+        /// <returns>1 for success and 0 for failure</returns>
+        public LoginStatus steamGuardRequest(String username, String password) {
+            String response = steamRequest("ISteamOAuth2/GetTokenWithCredentials/v0001",
+                "client_id=DE45CD61&grant_type=password&username=" + Uri.EscapeDataString(username) + "&password=" + Uri.EscapeDataString(password) + "&x_emailauthcode=0&scope=read_profile%20write_profile%20read_client%20write_client");
+
+            if (((string) data["x_errorcode"]).Equals("steamguard_code_required"))
+                    return 1
+                else
+                    return 0;
+          
+        }
 
         /// <summary>
         /// Authenticate with a username and password.
