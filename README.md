@@ -1,3 +1,6 @@
+This project is no longer actively maintained. You are advised to use a different library.
+========
+
 Steam Web API library
 ========
 
